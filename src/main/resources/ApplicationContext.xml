@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context" xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:cache="http://www.springframework.org/schema/cache"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/aop
+       http://www.springframework.org/schema/aop/spring-aop.xsd http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd
+">
+
+    <context:component-scan base-package="lee, mycache, order">
+        <context:include-filter type="annotation" expression="org.aspectj.lang.annotation.Aspect"/>
+    </context:component-scan>
+
+    <aop:aspectj-autoproxy/>
+    <cache:annotation-driven/>
+
+    <bean id="hello" class="lee.Hello"/>
+    <bean id="world" class="lee.World"/>
+    <bean id="targetBean" class="order.TargetBean"/>
+    <bean id="targetCom" class="order.com.com.com.TargetCom"/>
+    <bean id="userServiceImpl" class="mycache.UserServiceImpl"/>
+
+    <!--配置Spring内置缓存的缓存管理器-->
+    <bean id="cacheManager" class="org.springframework.cache.support.SimpleCacheManager">
+        <!--配置缓存区-->
+        <property name="caches">
+            <set>
+                <!--使用ConcurrentMapCacheFactoryBean配置缓存区
+                    下面列出多个缓存区，P:name用于为缓存区指定名字-->
+                <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean"
+                      p:name="default"/>
+                <bean class="org.springframework.cache.concurrent.ConcurrentMapCacheFactoryBean"
+                      p:name="users"/>
+            </set>
+        </property>
+    </bean>
+
+    <!--配置EhCache的CacheManager-->
+    <!--通过configLocation指定ehcache.xml文件的位置-->
+    <bean id="ehCacheManager"
+          class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean"
+          p:configLocation="classpath:ehcache.xml"
+          p:shared="false"/>
+    <!--配置基于EhCache的缓存管理器-->
+    <bean id="cacheManger"
+          class="org.springframework.cache.ehcache.EhCacheCacheManager"
+          p:cacheManager-ref="ehCacheManager"/>
+    <!--<bean class="org.springframework.aop.aspectj.annotation.AnnotationAwareAspectJAutoProxyCreator"/>-->
+</beans>
